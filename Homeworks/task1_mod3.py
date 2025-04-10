@@ -15,7 +15,7 @@ def get_days_from_today(transmitted_date):
     """
     try:
         today = date.today()
-        transmitted_date = datetime.strptime(transmitted_date, "%Y.%m.%d").date()
+        transmitted_date = datetime.strptime(transmitted_date, "%Y-%m-%d").date()
         days = transmitted_date - today
     except ValueError:
         raise ValueError(f"Dates must be in the form: {date.today()}")
@@ -37,7 +37,9 @@ def get_numbers_ticket(min, max, quantity):
         list: A sorted list of random integers
     """
     try:
-        if (max - min) < quantity:
+        if min < 0 or max < 0:
+            return []
+        if min >= max or quantity <= 0 or (max - min + 1) < quantity:
             return []
         num_list = random.sample(range(min, max + 1), quantity)
         num_list.sort()
@@ -45,7 +47,7 @@ def get_numbers_ticket(min, max, quantity):
     except ValueError:
         raise ValueError("Incorrect value entered!")
 
-def normalize_phone(phone_numbers):
+def normalize_phone(phone_number):
     """
     Normalizes a list of phone numbers into international format (+380...)
 
@@ -57,35 +59,24 @@ def normalize_phone(phone_numbers):
     """
     try:
         pattern = r"\D"
-        clean_list = []
-        for num in phone_numbers:
-            repleced_list = re.sub(pattern, "", num)
-            if repleced_list.startswith("380"):
-                clean_list.append("+" + repleced_list)
-            elif repleced_list.startswith("0"):
-                clean_list.append("+38" + repleced_list)
-            else:
-                clean_list.append("+" + num)
-        return clean_list
+        clean_number = ""
+        cleaner = re.sub(pattern, "", phone_number)
+        if cleaner.startswith("380"):
+            clean_number = "+" + cleaner
+        elif cleaner.startswith("0"):
+            clean_number = "+38" + cleaner
+        else:
+            clean_number = "+" + cleaner
+        return clean_number
     except ValueError:
         raise ValueError("Incorrect value entered!")
 
 
-# List of raw phone number to normalize
-raw_numbers = [
-    "067\\t123 4567",
-    "(095) 234-5678\\n",
-    "+380 44 123 4567",
-    "380501234567",
-    "    +38(050)123-32-34",
-    "     0503451234",
-    "(050)8889900",
-    "38050-111-22-22",
-    "38050 111 22 11   ",
-]
+# Phone number to normalize
+phone_number = "(095) 234-5678\\n"
 
 # Test: calculate days from today
-first_result = get_days_from_today("2025.05.22")
+first_result = get_days_from_today("2025-05-22")
 print(f"Quantity of days: {first_result}")
 
 # Test: generate random lottery numbers
@@ -93,5 +84,5 @@ second_result = get_numbers_ticket(1, 1000, 10)
 print(f"Your lottery numbers: {second_result}")
 
 # Test: normalize phone number
-third_result = normalize_phone(raw_numbers)
+third_result = normalize_phone(phone_number)
 print(f"Your phone numbers: {third_result}")
